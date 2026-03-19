@@ -9,28 +9,28 @@ bPset "modifyColor" 1;
 bPset "modifyAlpha" 1;
 bPset "illuminated" 1;
 bPset "castShadows" 1;
-bPset "branches" 1;
-bPset "twigs" 1;
+bPset "branches" 0;
+bPset "twigs" 0;
 bPset "buds" 0;
 bPset "leaves" 0;
 bPset "flowers" 1;
 
 // Brush
 bPset "brushType" 5;
-bPset "brushWidth" 0.016528;
+bPset "brushWidth" 0.005;
 bPset "screenspaceWidth" 0;
 bPset "stampDensity" 8;
 bPset "softness" 0;
 bPset "edgeAntialias" 1;
 bPset "blurIntensity" 4;
 
-// Branch Color
-bPset "color1R" 0.28;
-bPset "color1G" 0.18;
-bPset "color1B" 0.12;
-bPset "color2R" 0.4;
-bPset "color2G" 0.26;
-bPset "color2B" 0.18;
+// Stem Color (thin green stem)
+bPset "color1R" 0.25;
+bPset "color1G" 0.35;
+bPset "color1B" 0.15;
+bPset "color2R" 0.3;
+bPset "color2G" 0.4;
+bPset "color2B" 0.2;
 
 // Transparency
 bPset "transparency1R" 0;
@@ -102,17 +102,17 @@ bPset "strokeTime" 0;
 bPset "startTime" 0;
 bPset "endTime" 1000;
 
-// Tubes
+// Tubes - short thin stem, just enough to hold a flower
 bPset "tubes" 1;
 bPset "tubeCompletion" 1;
 bPset "tubesPerStep" 0;
 bPset "tubeRand" 1;
 bPset "startTubes" 1;
-bPset "lengthMax" 0.65;
-bPset "lengthMin" 0.55;
-bPset "segments" 10;
-bPset "tubeWidth1" 0.2;
-bPset "tubeWidth2" 0.064464;
+bPset "lengthMax" 0.05;
+bPset "lengthMin" 0.03;
+bPset "segments" 3;
+bPset "tubeWidth1" 0.01;
+bPset "tubeWidth2" 0.005;
 bPset "widthRand" 0;
 bPset "widthBias" 0;
 bPset "lengthFlex" 0;
@@ -143,22 +143,22 @@ bPset "displacementDelay" 1;
 bPset "wiggle" 0;
 bPset "wiggleFrequency" 3;
 bPset "wiggleOffset" 0;
-bPset "curl" 0.028928;
+bPset "curl" 0;
 bPset "curlFrequency" 6;
 bPset "curlOffset" 0;
 bPset "noise" 0;
 bPset "noiseFrequency" 2;
 bPset "noiseOffset" 0;
 
-// Branching
-bPset "splitMaxDepth" 5.9;
-bPset "splitRand" 0.14876;
-bPset "splitAngle" 22.314;
+// Branching - none
+bPset "splitMaxDepth" 0;
+bPset "splitRand" 0;
+bPset "splitAngle" 0;
 bPset "splitSizeDecay" 0.7;
-bPset "splitBias" 0.23968;
-bPset "splitTwist" 0.438;
+bPset "splitBias" 0;
+bPset "splitTwist" 0;
 bPset "startBranches" 0;
-bPset "numBranches" 2;
+bPset "numBranches" 0;
 bPset "branchDropout" 0;
 bPset "middleBranch" 0;
 bPset "minSize" 0.0001;
@@ -176,66 +176,66 @@ bPset "uniformForceY" 0;
 bPset "uniformForceZ" 0;
 bPset "turbulenceType" 0;
 bPset "turbulenceInterpolation" 0;
-bPset "turbulence" 0.23966;
-bPset "turbulenceFrequency" 0.22314;
-bPset "turbulenceSpeed" 0.13224;
+bPset "turbulence" 0;
+bPset "turbulenceFrequency" 0;
+bPset "turbulenceSpeed" 0;
 bPset "turbulenceOffsetX" 0;
 bPset "turbulenceOffsetY" 0;
 bPset "turbulenceOffsetZ" 0;
-bPset "random" 0.10744;
-bPset "gravity" 0.08264;
+bPset "random" 0;
+bPset "gravity" 0;
 bPset "momentum" 1;
 bPset "deflection" 1;
 bPset "deflectionMin" 0;
-bPset "deflectionMax" 0.19;
+bPset "deflectionMax" 0;
 
-// Twigs
+// Twigs - none
 bPset "twigsInCluster" 1;
-bPset "twigDropout" 0.10744;
-bPset "twigAngle1" 52.065;
-bPset "twigAngle2" 4.464;
-bPset "twigTwist" 0.15704;
-bPset "twigLength" 0.909;
-bPset "twigStart" 0.281;
-bPset "numTwigClusters" 19;
-bPset "twigBaseWidth" 0.76034;
-bPset "twigTipWidth" 0.19008;
+bPset "twigDropout" 1;
+bPset "twigAngle1" 0;
+bPset "twigAngle2" 0;
+bPset "twigTwist" 0;
+bPset "twigLength" 0;
+bPset "twigStart" 0;
+bPset "numTwigClusters" 0;
+bPset "twigBaseWidth" 0;
+bPset "twigTipWidth" 0;
 bPset "twigStiffness" 0.5;
-bPset "branchAfterTwigs" 1;
+bPset "branchAfterTwigs" 0;
 
-// Leaves
+// Leaves - none
 bPset "leavesInCluster" 1;
 bPset "leafDropout" 0;
-bPset "leafAngle1" 49.092;
-bPset "leafAngle2" 60.993;
-bPset "leafTwist" 0.90084;
-bPset "leafBend" 0.0828;
+bPset "leafAngle1" 0;
+bPset "leafAngle2" 0;
+bPset "leafTwist" 0;
+bPset "leafBend" 0;
 bPset "leafCurl[0].leafCurl_Position" 0;
 bPset "leafCurl[0].leafCurl_FloatValue" 0.5;
 bPset "leafCurl[0].leafCurl_Interp" 3;
 bPset "leafTwirl" 0;
 bPset "leafSegments" 3;
-bPset "leafStart" 0.49586;
-bPset "numLeafClusters" 26.364;
+bPset "leafStart" 0;
+bPset "numLeafClusters" 0;
 bPset "leafFlatness" 1;
-bPset "leafLength" 0.04;
-bPset "leafBaseWidth" 0.03;
-bPset "leafTipWidth" 0.03;
-bPset "leafSizeDecay" 0.77684;
-bPset "leafTranslucence" 0.4876;
-bPset "leafSpecular" 0.14876;
-bPset "terminalLeaf" 1;
-bPset "leafColor1R" 0.4851185381;
-bPset "leafColor1G" 0.6859599948;
-bPset "leafColor1B" 0.467138797;
-bPset "leafColor2R" 0.6731273532;
-bPset "leafColor2G" 0.768599987;
-bPset "leafColor2B" 0.6540786028;
-bPset "leafHueRand" 0.03306;
-bPset "leafSatRand" 0.14876;
-bPset "leafValRand" 0.1405;
+bPset "leafLength" 0;
+bPset "leafBaseWidth" 0;
+bPset "leafTipWidth" 0;
+bPset "leafSizeDecay" 0.7;
+bPset "leafTranslucence" 0.5;
+bPset "leafSpecular" 0.1;
+bPset "terminalLeaf" 0;
+bPset "leafColor1R" 0;
+bPset "leafColor1G" 0;
+bPset "leafColor1B" 0;
+bPset "leafColor2R" 0;
+bPset "leafColor2G" 0;
+bPset "leafColor2B" 0;
+bPset "leafHueRand" 0;
+bPset "leafSatRand" 0;
+bPset "leafValRand" 0;
 bPset "leafUseBranchTex" 0;
-bPset "leafStiffness" 0.10744;
+bPset "leafStiffness" 0;
 
 // Buds
 bPset "budSize" 0.03;
@@ -243,13 +243,13 @@ bPset "budColorR" 0.400000006;
 bPset "budColorG" 0.8000000119;
 bPset "budColorB" 0.200000003;
 
-// Flowers
+// Flowers - exact settings from cherryBlossom.mel
 bPset "petalsInFlower" 5;
 bPset "petalDropout" 0;
 bPset "flowerAngle1" 80;
 bPset "flowerAngle2" 70;
 bPset "flowerTwist" 0.438;
-bPset "petalBend" -1.26;
+bPset "petalBend" -0.9;
 bPset "petalCurl[0].petalCurl_Position" 0.02142857201;
 bPset "petalCurl[0].petalCurl_FloatValue" 0.5400000215;
 bPset "petalCurl[0].petalCurl_Interp" 1;
@@ -282,8 +282,8 @@ bPset "petalCurl[13].petalCurl_FloatValue" 0.400000006;
 bPset "petalCurl[13].petalCurl_Interp" 3;
 bPset "petalTwirl" -0.02;
 bPset "petalSegments" 5;
-bPset "flowerStart" 0.65;
-bPset "numFlowers" 10;
+bPset "flowerStart" 0.01;
+bPset "numFlowers" 1;
 bPset "petalFlatness" 1;
 bPset "petalLength" 0.037;
 bPset "petalBaseWidth" 0.036;
@@ -310,19 +310,19 @@ bPset "transpLengthMap" 0;
 bPset "incandLengthMap" 0;
 bPset "widthLengthMap" 0;
 bPset "splitLengthMap" 0;
-bPset "mapColor" 1;
+bPset "mapColor" 0;
 bPset "mapOpacity" 0;
-bPset "mapDisplacement" 1;
-bPset "textureType" 4;
-bPset "mapMethod" 2;
+bPset "mapDisplacement" 0;
+bPset "textureType" 0;
+bPset "mapMethod" 0;
 bPset "texColorScale" 1;
 bPset "texColorOffset" 0;
 bPset "texOpacityScale" 1;
 bPset "texOpacityOffset" 0;
-bPset "displacementScale" 0.9091;
+bPset "displacementScale" 0;
 bPset "displacementOffset" 0;
-bPset "bumpIntensity" 1.57024;
-bPset "bumpBlur" 1.88428;
+bPset "bumpIntensity" 0;
+bPset "bumpBlur" 0;
 bPset "luminanceIsDisplacement" 0;
 bPset "texColor1R" 1;
 bPset "texColor1G" 1;
@@ -334,12 +334,12 @@ bPset "texAlpha1" 1;
 bPset "texAlpha2" 0;
 bPset "texUniformity" 0.5;
 bPset "fringeRemoval" 0;
-bPset "repeatU" 0.5372;
+bPset "repeatU" 1;
 bPset "repeatV" 1;
 bPset "offsetU" 0;
 bPset "offsetV" 0;
-bPset "blurMult" 0.90908;
-bPset "smear" 0.1;
+bPset "blurMult" 1;
+bPset "smear" 0;
 bPset "smearU" 0;
 bPset "smearV" 0;
 bPset "useFrameExtension" 0;
@@ -358,47 +358,17 @@ bPset "multiStreakLightAll" 0;
 
 // Mesh
 bPset "singleSided" 0;
-bPset "tubeSections" 25;
-bPset "subSegments" 2;
+bPset "tubeSections" 8;
+bPset "subSegments" 1;
 bPset "perPixelLighting" 1;
 
 // Width Scale
 bPset "widthScale[0].widthScale_Position" 0;
 bPset "widthScale[0].widthScale_FloatValue" 1;
 bPset "widthScale[0].widthScale_Interp" 3;
-bPset "widthScale[1].widthScale_Position" 0.6714285612;
-bPset "widthScale[1].widthScale_FloatValue" 0.6399999857;
+bPset "widthScale[1].widthScale_Position" 1;
+bPset "widthScale[1].widthScale_FloatValue" 0.5;
 bPset "widthScale[1].widthScale_Interp" 3;
-bPset "widthScale[2].widthScale_Position" 0.08571428806;
-bPset "widthScale[2].widthScale_FloatValue" 0.7799999714;
-bPset "widthScale[2].widthScale_Interp" 3;
-bPset "widthScale[3].widthScale_Position" 0.9428571463;
-bPset "widthScale[3].widthScale_FloatValue" 0.5799999833;
-bPset "widthScale[3].widthScale_Interp" 3;
-bPset "widthScale[4].widthScale_Position" 1;
-bPset "widthScale[4].widthScale_FloatValue" 0.05999999866;
-bPset "widthScale[4].widthScale_Interp" 3;
-bPset "widthScale[5].widthScale_Position" 0.2928571403;
-bPset "widthScale[5].widthScale_FloatValue" 0.6600000262;
-bPset "widthScale[5].widthScale_Interp" 3;
-bPset "widthScale[6].widthScale_Position" 0.8785714507;
-bPset "widthScale[6].widthScale_FloatValue" 0.7599999905;
-bPset "widthScale[6].widthScale_Interp" 3;
-bPset "widthScale[7].widthScale_Position" 0.8142856956;
-bPset "widthScale[7].widthScale_FloatValue" 0.6200000048;
-bPset "widthScale[7].widthScale_Interp" 3;
-bPset "widthScale[8].widthScale_Position" 0.5571429729;
-bPset "widthScale[8].widthScale_FloatValue" 0.8600000143;
-bPset "widthScale[8].widthScale_Interp" 3;
-bPset "widthScale[9].widthScale_Position" 0.4285714328;
-bPset "widthScale[9].widthScale_FloatValue" 0.6600000262;
-bPset "widthScale[9].widthScale_Interp" 3;
-bPset "widthScale[10].widthScale_Position" 0.4785709977;
-bPset "widthScale[10].widthScale_FloatValue" 0.7599999905;
-bPset "widthScale[10].widthScale_Interp" 3;
-bPset "widthScale[11].widthScale_Position" 0.04285714403;
-bPset "widthScale[11].widthScale_FloatValue" 0.9200000167;
-bPset "widthScale[11].widthScale_Interp" 3;
 
 // Leaf Width Scale
 bPset "leafWidthScale[2].leafWidthScale_Position" 0.8285714388;
@@ -411,7 +381,7 @@ bPset "leafWidthScale[4].leafWidthScale_Position" 0.2785714269;
 bPset "leafWidthScale[4].leafWidthScale_FloatValue" 1;
 bPset "leafWidthScale[4].leafWidthScale_Interp" 3;
 
-// Petal Width Scale
+// Petal Width Scale - exact from cherryBlossom
 bPset "petalWidthScale[0].petalWidthScale_Position" 0.03571428731;
 bPset "petalWidthScale[0].petalWidthScale_FloatValue" 0.1800000072;
 bPset "petalWidthScale[0].petalWidthScale_Interp" 3;
@@ -435,15 +405,9 @@ bPset "petalWidthScale[7].petalWidthScale_FloatValue" 1;
 bPset "petalWidthScale[7].petalWidthScale_Interp" 3;
 
 // Twig Length Scale
-bPset "twigLengthScale[0].twigLengthScale_Position" 0.3000000119;
-bPset "twigLengthScale[0].twigLengthScale_FloatValue" 0.7599999905;
-bPset "twigLengthScale[0].twigLengthScale_Interp" 3;
-bPset "twigLengthScale[1].twigLengthScale_Position" 0.6571428776;
-bPset "twigLengthScale[1].twigLengthScale_FloatValue" 1;
-bPset "twigLengthScale[1].twigLengthScale_Interp" 1;
-bPset "twigLengthScale[2].twigLengthScale_Position" 1;
-bPset "twigLengthScale[2].twigLengthScale_FloatValue" 0.8799999952;
-bPset "twigLengthScale[2].twigLengthScale_Interp" 1;
+bPset "twigLengthScale[0].twigLengthScale_Position" 0;
+bPset "twigLengthScale[0].twigLengthScale_FloatValue" 1;
+bPset "twigLengthScale[0].twigLengthScale_Interp" 1;
 
 // Thorns
 bPset "branchThorns" 0;
@@ -496,8 +460,8 @@ bPset "endCaps" 0;
 bPset "hardEdges" 0;
 
 // Textures
-bPsetName "imageName" "oakWhiteBark.tif";
-bPsetName "leafImage" "oakLeaf.tif";
+bPsetName "imageName" "";
+bPsetName "leafImage" "";
 bPsetName "flowerImage" "whitePetalHC.jpg";
 bPsetName "creationScript" "";
 bPsetName "runtimeScript" "";
@@ -507,4 +471,4 @@ brushPresetApply();
 presetSetPressure 1 0 0.5854 1;
 presetSetPressure 2 0 0 1;
 presetSetPressure 3 0 0 1;
-rename (getDefaultBrush()) cherryBlossom;
+rename (getDefaultBrush()) cherryBlossomFlower;
