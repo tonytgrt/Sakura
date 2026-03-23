@@ -1,0 +1,121 @@
+// riverbedMat.mel — Procedural river bed using Arnold-native nodes
+// Run: source "riverbedMat.mel";
+
+// ============================================================
+// 1. MESH (create if missing)
+// ============================================================
+if (!`objExists "riverBed"`) {
+    polyPlane -name "riverBed" -w 30 -h 10 -sx 10 -sy 10 -ax 0 1 0;
+    setAttr "riverBed.translateY" -0.5;
+    makeIdentity -apply true -t 1 -r 1 -s 1 "riverBed";
+}
+
+// ============================================================
+// 2. SHADER
+// ============================================================
+shadingNode -asShader "aiStandardSurface" -name "riverBedMat";
+sets -renderable true -noSurfaceShader true -empty -name "riverBedSG";
+connectAttr -f "riverBedMat.outColor" "riverBedSG.surfaceShader";
+select "riverBed";
+sets -e -forceElement "riverBedSG";
+
+setAttr "riverBedMat.base" 1.0;
+setAttr "riverBedMat.specular" 0.08;
+setAttr "riverBedMat.specularRoughness" 0.95;
+
+// ============================================================
+// 3. COLOR — Arnold-native aiNoise driving aiMixShader approach
+//    Using aiNoise -> aiRange -> blendColors for reliable rendering
+// ============================================================
+
+// --- Sand pattern: aiNoise for wispy organic look ---
+shadingNode -asTexture "aiNoise" -name "bedSandNoise";
+setAttr "bedSandNoise.scaleX" 2.0;
+setAttr "bedSandNoise.scaleY" 2.0;
+setAttr "bedSandNoise.scaleZ" 2.0;
+setAttr "bedSandNoise.octaves" 4;
+setAttr "bedSandNoise.distortion" 1.5;               // Wispy distortion
+setAttr "bedSandNoise.color1" -type double3 0.35 0.25 0.14;   // Light sand
+setAttr "bedSandNoise.color2" -type double3 0.18 0.12 0.06;   // Dark wet sand
+
+// --- Rock patches: lower frequency aiNoise ---
+shadingNode -asTexture "aiNoise" -name "bedRockNoise";
+setAttr "bedRockNoise.scaleX" 5.0;
+setAttr "bedRockNoise.scaleY" 5.0;
+setAttr "bedRockNoise.scaleZ" 5.0;
+setAttr "bedRockNoise.octaves" 3;
+setAttr "bedRockNoise.distortion" 0.5;
+setAttr "bedRockNoise.color1" -type double3 1 1 1;   // White = use sand
+setAttr "bedRockNoise.color2" -type double3 0 0 0;   // Black = use rock
+
+// --- Rock color ---
+shadingNode -asTexture "aiNoise" -name "bedRockColor";
+setAttr "bedRockColor.scaleX" 3.0;
+setAttr "bedRockColor.scaleY" 3.0;
+setAttr "bedRockColor.scaleZ" 3.0;
+setAttr "bedRockColor.octaves" 2;
+setAttr "bedRockColor.color1" -type double3 0.12 0.09 0.06;   // Dark rock
+setAttr "bedRockColor.color2" -type double3 0.08 0.06 0.04;   // Darker rock
+
+// --- Fine grain detail ---
+shadingNode -asTexture "aiNoise" -name "bedGrainNoise";
+setAttr "bedGrainNoise.scaleX" 0.4;
+setAttr "bedGrainNoise.scaleY" 0.4;
+setAttr "bedGrainNoise.scaleZ" 0.4;
+setAttr "bedGrainNoise.octaves" 3;
+setAttr "bedGrainNoise.color1" -type double3 0.85 0.85 0.85;
+setAttr "bedGrainNoise.color2" -type double3 1.15 1.15 1.15;
+
+// ============================================================
+// 4. BLEND LAYERS
+// ============================================================
+
+// Blend sand and rock using rock noise as mask
+shadingNode -asUtility "aiMixShader" -name "bedMix";
+// Can't easily use aiMixShader for textures — use layeredTexture instead
+
+// Use aiLayerRgba or manual blend via aiMultiply + aiAdd
+// Simplest reliable approach: layeredTexture node
+
+shadingNode -asTexture "layeredTexture" -name "bedLayered";
+
+// Layer 0 (top): fine grain as multiply
+connectAttr -f "bedGrainNoise.outColor" "bedLayered.inputs[0].color";
+setAttr "bedLayered.inputs[0].blendMode" 6;          // 6 = Multiply
+setAttr "bedLayered.inputs[0].alpha" 1.0;
+
+// Layer 1: rock color, masked by rock noise alpha
+connectAttr -f "bedRockColor.outColor" "bedLayered.inputs[1].color";
+connectAttr -f "bedRockNoise.outColorR" "bedLayered.inputs[1].alpha";
+setAttr "bedLayered.inputs[1].blendMode" 4;          // 4 = Over
+
+// Layer 2 (bottom): sand base
+connectAttr -f "bedSandNoise.outColor" "bedLayered.inputs[2].color";
+setAttr "bedLayered.inputs[2].blendMode" 0;          // 0 = None (base)
+setAttr "bedLayered.inputs[2].alpha" 1.0;
+
+// Connect to shader
+connectAttr -f "bedLayered.outColor" "riverBedMat.baseColor";
+
+// ============================================================
+// 5. BUMP — Arnold-native noise for pebbles + grain
+// ============================================================
+shadingNode -asTexture "aiNoise" -name "bedBumpNoise";
+setAttr "bedBumpNoise.scaleX" 1.5;
+setAttr "bedBumpNoise.scaleY" 1.5;
+setAttr "bedBumpNoise.scaleZ" 1.5;
+setAttr "bedBumpNoise.octaves" 5;
+setAttr "bedBumpNoise.distortion" 0.8;
+setAttr "bedBumpNoise.color1" -type double3 0 0 0;
+setAttr "bedBumpNoise.color2" -type double3 1 1 1;
+
+shadingNode -asUtility "bump2d" -name "bedBump";
+setAttr "bedBump.bumpDepth" 0.15;
+connectAttr -f "bedBumpNoise.outColorR" "bedBump.bumpValue";
+connectAttr -f "bedBump.outNormal" "riverBedMat.normalCamera";
+
+// ============================================================
+// DONE
+// ============================================================
+select -r "riverBed";
+print "River bed material created (Arnold-native nodes).\n";
