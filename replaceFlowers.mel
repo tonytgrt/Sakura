@@ -1,0 +1,125 @@
+// replaceFlowers.mel
+// Replaces individual Paint Effects petals with full flower instances.
+//
+// Usage:
+//   1. Set petalsInFlower to 1 on your tree brush
+//   2. Paint the tree and convert Paint Effects to Polygons
+//      (Modify > Convert > Paint Effects to Polygons)
+//   3. Have your flower model ready (e.g., Flower1 group with 5 polySurfaces)
+//   4. Select the petal mesh (e.g., cherryBlossom29Flower) first,
+//      then Shift-select the flower template (e.g., Flower1)
+//   5. Run:  source "replaceFlowers.mel"; replaceFlowers;
+
+global proc replaceFlowers()
+{
+    string $sel[] = `ls -sl -tr`;
+    if (size($sel) != 2) {
+        error "Select the petal mesh first, then the flower template group.";
+        return;
+    }
+
+    string $petalMesh = $sel[0];
+    string $flowerTmpl = $sel[1];
+
+    // Duplicate petal mesh so we can separate without destroying the original
+    string $dup[] = `duplicate -rr $petalMesh`;
+    string $dupName = $dup[0];
+
+    // Separate into individual petal shells
+    polySeparate -ch 0 $dupName;
+    string $pieces[] = `listRelatives -c -type "transform" $dupName`;
+
+    int $count = size($pieces);
+    if ($count == 0) {
+        warning "No separate shells found. Is the petal mesh a single combined object?";
+        delete $dupName;
+        return;
+    }
+    print ("Found " + $count + " petals to replace.\n");
+
+    // Flower template bounding box — use Y height as size reference
+    float $tmplBB[] = `exactWorldBoundingBox $flowerTmpl`;
+    float $tmplSizeY = $tmplBB[4] - $tmplBB[1];
+    if ($tmplSizeY < 0.0001) $tmplSizeY = 1.0;
+
+    // Output group for all flower instances
+    string $outGrp = `group -em -n "cherryBlossomFlowers"`;
+
+    for ($i = 0; $i < $count; $i++) {
+        string $piece = $dupName + "|" + $pieces[$i];
+
+        // --- Position: bounding box center ---
+        float $bb[] = `exactWorldBoundingBox $piece`;
+        float $cx = ($bb[0] + $bb[3]) / 2.0;
+        float $cy = ($bb[1] + $bb[4]) / 2.0;
+        float $cz = ($bb[2] + $bb[5]) / 2.0;
+
+        // --- Scale: match petal size to flower template ---
+        float $sx = $bb[3] - $bb[0];
+        float $sy = $bb[4] - $bb[1];
+        float $sz = $bb[5] - $bb[2];
+        // Use the largest axis of the petal as reference
+        float $petalSize = $sx;
+        if ($sy > $petalSize) $petalSize = $sy;
+        if ($sz > $petalSize) $petalSize = $sz;
+        float $scale = $petalSize / $tmplSizeY;
+
+        // --- Orientation: average face normal ---
+        int $nf[] = `polyEvaluate -f $piece`;
+        float $nx = 0, $ny = 0, $nz = 0;
+        for ($fi = 0; $fi < $nf[0]; $fi++) {
+            string $info[] = `polyInfo -fn ($piece + ".f[" + $fi + "]")`;
+            string $toks[];
+            tokenize $info[0] " \t\n:" $toks;
+            // Format: FACE_NORMAL  idx  nx ny nz
+            $nx += (float)$toks[2];
+            $ny += (float)$toks[3];
+            $nz += (float)$toks[4];
+        }
+        float $len = sqrt($nx * $nx + $ny * $ny + $nz * $nz);
+        if ($len > 0.0001) {
+            $nx /= $len;
+            $ny /= $len;
+            $nz /= $len;
+        } else {
+            // Fallback: point upward
+            $nx = 0; $ny = 1; $nz = 0;
+        }
+
+        // --- Create instance ---
+        string $inst[] = `instance $flowerTmpl`;
+
+        // Scale first (before moving, so scale is around origin)
+        xform -s $scale $scale $scale $inst[0];
+
+        // Move to petal center
+        xform -ws -t $cx $cy $cz $inst[0];
+
+        // Orient: aim the flower's Y axis along the petal normal
+        // Use a temporary locator as aim target
+        string $loc[] = `spaceLocator`;
+        setAttr ($loc[0] + ".visibility") 0;
+        xform -ws -t ($cx + $nx) ($cy + $ny) ($cz + $nz) $loc[0];
+
+        string $ac[] = `aimConstraint
+            -aim 0 1 0
+            -u 0 0 1
+            -wut "scene"
+            $loc[0] $inst[0]`;
+        delete $ac[0];
+        delete $loc[0];
+
+        parent $inst[0] $outGrp;
+
+        if (($i + 1) % 50 == 0)
+            print ("  Processed " + ($i + 1) + " / " + $count + "...\n");
+    }
+
+    // Clean up: delete separated pieces, hide original petal mesh and template
+    delete $dupName;
+    setAttr ($petalMesh + ".visibility") 0;
+    setAttr ($flowerTmpl + ".visibility") 0;
+
+    print ("Done! Created " + $count + " flower instances in " + $outGrp + ".\n");
+    select -r $outGrp;
+}

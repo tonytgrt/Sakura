@@ -1,0 +1,180 @@
+// river.mel — River surface with visible Perlin noise displacement
+// Run: source "river.mel";
+//
+// Uses high-poly mesh so displacement works without Arnold subdivision.
+
+// ============================================================
+// 1. MESH — High-poly so displacement deforms actual geometry
+// ============================================================
+polyPlane -name "riverSurface" -w 30 -h 10 -sx 300 -sy 100 -ax 0 1 0;
+makeIdentity -apply true -t 1 -r 1 -s 1 "riverSurface";
+
+// Arnold shape settings — try subdivision too as backup
+string $shapes[] = `listRelatives -shapes "riverSurface"`;
+string $shp = $shapes[0];
+// Enable subdivision if Arnold supports it on this GPU
+catch(`setAttr ($shp + ".aiSubdivType") 1`);
+catch(`setAttr ($shp + ".aiSubdivIterations") 2`);
+catch(`setAttr ($shp + ".aiDispHeight") 1.0`);
+catch(`setAttr ($shp + ".aiDispZeroValue") 0.0`);
+catch(`setAttr ($shp + ".aiDispAutobump") 1`);
+// Smooth mesh preview off to avoid confusion
+setAttr ($shp + ".displaySmoothMesh") 0;
+
+// ============================================================
+// 2. SHADER (Arnold aiStandardSurface)
+// ============================================================
+shadingNode -asShader "aiStandardSurface" -name "riverWaterMat";
+sets -renderable true -noSurfaceShader true -empty -name "riverWaterSG";
+connectAttr -f "riverWaterMat.outColor" "riverWaterSG.surfaceShader";
+select "riverSurface";
+sets -e -forceElement "riverWaterSG";
+
+// Base
+setAttr "riverWaterMat.base" 0.5;
+setAttr "riverWaterMat.baseColor" -type double3 0.03 0.1 0.14;
+
+// Specular — glossy reflective surface
+setAttr "riverWaterMat.specular" 1.0;
+setAttr "riverWaterMat.specularColor" -type double3 1 1 1;
+setAttr "riverWaterMat.specularRoughness" 0.1;
+setAttr "riverWaterMat.specularIOR" 1.33;
+
+// Transmission — see-through water
+setAttr "riverWaterMat.transmission" 0.4;
+setAttr "riverWaterMat.transmissionColor" -type double3 0.06 0.18 0.15;
+setAttr "riverWaterMat.transmissionDepth" 3.0;
+
+// Coat
+setAttr "riverWaterMat.coat" 0.3;
+setAttr "riverWaterMat.coatRoughness" 0.05;
+setAttr "riverWaterMat.coatIOR" 1.33;
+
+// ============================================================
+// 3. DISPLACEMENT — Layered Perlin noise
+// ============================================================
+// Arnold displacement in Maya works through the standard
+// displacementShader node connected to the SG.
+// The noise outputs 0–1; we remap so 0.5 = no displacement,
+// <0.5 = push down, >0.5 = push up.
+
+// --- Broad swells ---
+shadingNode -asTexture "noise" -name "riverNoiseBroad";
+shadingNode -asUtility "place2dTexture" -name "riverBroadPlace2d";
+connectAttr "riverBroadPlace2d.outUV" "riverNoiseBroad.uvCoord";
+connectAttr "riverBroadPlace2d.outUvFilterSize" "riverNoiseBroad.uvFilterSize";
+setAttr "riverNoiseBroad.noiseType" 4;               // Perlin
+setAttr "riverNoiseBroad.frequency" 4.0;
+setAttr "riverNoiseBroad.amplitude" 1.0;
+
+// --- Fine ripples ---
+shadingNode -asTexture "noise" -name "riverNoiseFine";
+shadingNode -asUtility "place2dTexture" -name "riverFinePlace2d";
+connectAttr "riverFinePlace2d.outUV" "riverNoiseFine.uvCoord";
+connectAttr "riverFinePlace2d.outUvFilterSize" "riverNoiseFine.uvFilterSize";
+setAttr "riverNoiseFine.noiseType" 4;                // Perlin
+setAttr "riverNoiseFine.frequency" 10.0;
+setAttr "riverNoiseFine.amplitude" 1.0;
+
+// Weighted blend: broad * 0.7 + fine * 0.3
+shadingNode -asUtility "multiplyDivide" -name "riverBroadMul";
+setAttr "riverBroadMul.operation" 1;
+setAttr "riverBroadMul.input2X" 0.7;
+connectAttr "riverNoiseBroad.outColorR" "riverBroadMul.input1X";
+
+shadingNode -asUtility "multiplyDivide" -name "riverFineMul";
+setAttr "riverFineMul.operation" 1;
+setAttr "riverFineMul.input2X" 0.3;
+connectAttr "riverNoiseFine.outColorR" "riverFineMul.input1X";
+
+shadingNode -asUtility "plusMinusAverage" -name "riverNoiseBlend";
+setAttr "riverNoiseBlend.operation" 1;
+connectAttr "riverBroadMul.outputX" "riverNoiseBlend.input1D[0]";
+connectAttr "riverFineMul.outputX" "riverNoiseBlend.input1D[1]";
+
+// Displacement shader — large scale so it's actually visible
+shadingNode -asShader "displacementShader" -name "riverDisp";
+setAttr "riverDisp.scale" 0.8;
+connectAttr -f "riverNoiseBlend.output1D" "riverDisp.displacement";
+connectAttr -f "riverDisp.displacement" "riverWaterSG.displacementShader";
+
+// ============================================================
+// 4. DEFORMER FALLBACK — Guarantees visible waves in viewport
+//    AND in Arnold render regardless of displacement support
+// ============================================================
+// Two sine deformers at different frequencies create wave-like motion
+select -r "riverSurface";
+
+// Primary wave along flow direction
+string $sine1[] = `nonLinear -type "sine"`;
+string $sine1Handle = $sine1[1];
+rename $sine1[0] "riverWave1";
+rename $sine1Handle "riverWave1Handle";
+setAttr "riverWave1.amplitude" 0.08;
+setAttr "riverWave1.wavelength" 5.0;
+// Rotate to align with flow (along X)
+setAttr "riverWave1Handle.rotateZ" 90;
+
+// Secondary cross-wave for complexity
+select -r "riverSurface";
+string $sine2[] = `nonLinear -type "sine"`;
+string $sine2Handle = $sine2[1];
+rename $sine2[0] "riverWave2";
+rename $sine2Handle "riverWave2Handle";
+setAttr "riverWave2.amplitude" 0.04;
+setAttr "riverWave2.wavelength" 3.0;
+// Slight angle for cross-ripples
+setAttr "riverWave2Handle.rotateZ" 90;
+setAttr "riverWave2Handle.rotateY" 30;
+
+// ============================================================
+// 5. BUMP — Micro-ripples for specular shimmer
+// ============================================================
+shadingNode -asTexture "noise" -name "riverBumpNoise";
+shadingNode -asUtility "place2dTexture" -name "riverBumpPlace2d";
+connectAttr "riverBumpPlace2d.outUV" "riverBumpNoise.uvCoord";
+connectAttr "riverBumpPlace2d.outUvFilterSize" "riverBumpNoise.uvFilterSize";
+setAttr "riverBumpNoise.noiseType" 4;
+setAttr "riverBumpNoise.frequency" 30.0;
+
+shadingNode -asUtility "bump2d" -name "riverBump";
+setAttr "riverBump.bumpDepth" 0.2;
+connectAttr -f "riverBumpNoise.outAlpha" "riverBump.bumpValue";
+connectAttr -f "riverBump.outNormal" "riverWaterMat.normalCamera";
+
+// ============================================================
+// 6. FLOW ANIMATION
+// ============================================================
+expression -name "riverFlowExpr" -string (
+    "// Sine deformer animation — actual geometry motion\n" +
+    "riverWave1.offset = time * 1.5;\n" +
+    "riverWave2.offset = time * 0.8;\n" +
+    "\n" +
+    "// Noise time evolution\n" +
+    "riverNoiseBroad.time = frame * 0.015;\n" +
+    "riverNoiseFine.time = frame * 0.03;\n" +
+    "riverBumpNoise.time = frame * 0.05;\n" +
+    "\n" +
+    "// UV scrolling for directional flow\n" +
+    "riverBroadPlace2d.offsetU = time * 0.06;\n" +
+    "riverBroadPlace2d.offsetV = time * 0.003;\n" +
+    "riverFinePlace2d.offsetU = time * 0.12;\n" +
+    "riverFinePlace2d.offsetV = time * 0.008;\n" +
+    "riverBumpPlace2d.offsetU = time * 0.18;\n" +
+    "riverBumpPlace2d.offsetV = time * 0.01;\n"
+);
+
+// ============================================================
+// DONE
+// ============================================================
+select -r "riverSurface";
+print "River created with 3 layers of wave detail:\n";
+print "  1. Sine deformers  — visible geometry waves (viewport + render)\n";
+print "  2. Displacement    — render-time Perlin noise waves\n";
+print "  3. Bump map        — specular micro-ripples\n";
+print "\n";
+print "Adjust:\n";
+print "  riverWave1.amplitude / wavelength — main wave size\n";
+print "  riverWave2.amplitude / wavelength — cross-ripple size\n";
+print "  riverDisp.scale                   — noise displacement height\n";
+print "  riverBump.bumpDepth               — specular shimmer\n";

@@ -244,7 +244,7 @@ bPset "budColorG" 0.8000000119;
 bPset "budColorB" 0.200000003;
 
 // Flowers
-bPset "petalsInFlower" 5;
+bPset "petalsInFlower" 1;
 bPset "petalDropout" 0;
 bPset "flowerAngle1" 80;
 bPset "flowerAngle2" 70;
